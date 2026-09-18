@@ -1,0 +1,2 @@
+br.com.houpper.common.exception.configuration.FeignAutoConfiguration
+br.com.houpper.common.exception.configuration.ExceptionAutoConfiguration
