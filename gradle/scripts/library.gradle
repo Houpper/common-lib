@@ -1,0 +1,37 @@
+def azureArtifactsToken = System.getenv("AZURE_ARTIFACTS_TOKEN")
+
+tasks.withType(PublishToMavenRepository).configureEach {
+    doFirst {
+        if (!azureArtifactsToken) {
+            throw new GradleException(
+                    "Variável AZURE_ARTIFACTS_TOKEN não definida. Necessária para publish."
+            )
+        }
+    }
+}
+
+
+publishing {
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            groupId = project.group
+            artifactId = project.name
+            version = project.version
+        }
+    }
+
+    repositories {
+        maven {
+            url = uri("https://pkgs.dev.azure.com/Houpper-Services/_packaging/Houpper-Services/maven/v1")
+            credentials {
+                username = "AzureDevOps"
+                password = azureArtifactsToken
+            }
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+}
