@@ -1,8 +1,10 @@
 # Houpper Common Library
 
-Biblioteca compartilhada da plataforma Houpper destinada a centralizar funcionalidades comuns utilizadas por diferentes serviços da plataforma.
+Biblioteca compartilhada da plataforma Houpper destinada a centralizar funcionalidades comuns utilizadas por diferentes
+serviços da plataforma.
 
-O objetivo da biblioteca é evitar duplicação de código, padronizar comportamentos e fornecer componentes reutilizáveis sem introduzir dependências desnecessárias nos serviços consumidores.
+O objetivo da biblioteca é evitar duplicação de código, padronizar comportamentos e fornecer componentes reutilizáveis
+sem introduzir dependências desnecessárias nos serviços consumidores.
 
 ---
 
@@ -37,13 +39,7 @@ br.com.houpper.common
 │   ├── feign
 │   └── model
 │
-├── security
-│
-├── tenant
-│
-├── entity
-│
-└── validation
+└── validation_ex
 ```
 
 Nem todos os módulos precisam existir desde o início.
@@ -283,7 +279,8 @@ compileOnly 'org.springframework.cloud:spring-cloud-starter-openfeign'
 compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
 ```
 
-A intenção é evitar que a utilização da `common-lib` introduza automaticamente dependências desnecessárias nos serviços consumidores.
+A intenção é evitar que a utilização da `common-lib` introduza automaticamente dependências desnecessárias nos serviços
+consumidores.
 
 ---
 
@@ -422,7 +419,8 @@ entity-lib
 
 A `common-lib` deve permanecer pequena e genérica.
 
-Funcionalidades que possuam forte dependência tecnológica ou arquitetural devem ser avaliadas para uma biblioteca própria.
+Funcionalidades que possuam forte dependência tecnológica ou arquitetural devem ser avaliadas para uma biblioteca
+própria.
 
 ---
 
