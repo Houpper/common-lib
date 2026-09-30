@@ -1,6 +1,7 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'io.spring.dependency-management' version '1.1.7'
 }
 
 group = 'br.com.houpper'
@@ -19,10 +20,54 @@ java {
     withJavadocJar()
 }
 
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+ext {
+    set('springBootVersion', "4.1.1")
+    set('springCloudVersion', "2025.1.3")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.boot:spring-boot-dependencies:${springBootVersion}"
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
 dependencies {
+
+    // Spring Web MVC
+    compileOnly 'org.springframework.boot:spring-boot-starter-webmvc'
+
+    // Spring Security Core
+    compileOnly 'org.springframework.security:spring-security-core'
+
+    // Spring Open Feign
+    compileOnly 'org.springframework.cloud:spring-cloud-starter-openfeign'
+
+    // Spring Auto Configure
+    compileOnly 'org.springframework.boot:spring-boot-autoconfigure'
+
+    // Lombok
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // Tests
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    testImplementation 'org.springframework.boot:spring-boot-starter-validation'
+
     testImplementation libs.junit
-    api libs.commons.math3
-    implementation libs.guava
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
 }
 
 apply from: "gradle/scripts/build-info.gradle"
