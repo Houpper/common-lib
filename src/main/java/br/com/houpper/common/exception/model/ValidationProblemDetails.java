@@ -44,5 +44,4 @@ public record ValidationProblemDetails(
 
         Map<String, String> fields
 
-) implements Serializable {
-}
+) implements Serializable {}

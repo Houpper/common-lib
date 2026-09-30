@@ -12,6 +12,7 @@ import br.com.houpper.common.exception.exceptions.UnprocessableEntityException;
 import feign.Response;
 import feign.Util;
 import feign.codec.ErrorDecoder;
+import tools.jackson.core.exc.StreamReadException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -19,28 +20,23 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Decoder de erros do Feign responsável por transformar respostas HTTP de erro
- * dos serviços remotos em exceções padronizadas da aplicação.
+ * Decoder de erros do Feign responsável por transformar respostas HTTP de erro dos serviços remotos em exceções
+ * padronizadas da aplicação.
  *
- * <p>
- * Para respostas contendo um corpo JSON no padrão da plataforma Houpper,
- * utiliza o campo {@code detail} como mensagem da exceção.
- * </p>
+ * <p> Para respostas contendo um corpo JSON no padrão da plataforma Houpper, utiliza o campo {@code detail} como
+ * mensagem da exceção. </p>
  */
 public class FeignErrorDecoder implements ErrorDecoder {
 
     /**
-     * Mensagem padrão utilizada quando não é possível extrair
-     * detalhes da resposta do serviço remoto.
+     * Mensagem padrão utilizada quando não é possível extrair detalhes da resposta do serviço remoto.
      */
     private static final String DEFAULT_ERROR_MESSAGE = "Remote service error";
 
     /**
-     * Decoder padrão do Feign utilizado para códigos HTTP
-     * não tratados especificamente por este decoder.
+     * Decoder padrão do Feign utilizado para códigos HTTP não tratados especificamente por este decoder.
      */
-    private static final ErrorDecoder DEFAULT_ERROR_DECODER =
-            new ErrorDecoder.Default();
+    private static final ErrorDecoder DEFAULT_ERROR_DECODER = new ErrorDecoder.Default();
 
     /**
      * Mapper configurado pela aplicação.
@@ -59,9 +55,9 @@ public class FeignErrorDecoder implements ErrorDecoder {
     /**
      * Decodifica uma resposta HTTP de erro.
      *
-     * @param methodKey identificação do método Feign.
-     * @param response resposta HTTP recebida do serviço remoto.
-     * @return exceção correspondente ao status HTTP.
+     * @param methodKey Identificação do método Feign.
+     * @param response Resposta HTTP recebida do serviço remoto.
+     * @return exceção Correspondente ao status HTTP.
      */
     @Override
     public Exception decode(String methodKey, Response response) {
@@ -91,11 +87,8 @@ public class FeignErrorDecoder implements ErrorDecoder {
     /**
      * Extrai a mensagem de erro do corpo da resposta.
      *
-     * <p>
-     * Para respostas JSON, utiliza o campo {@code detail}.
-     * Caso o corpo esteja ausente, vazio ou não contenha um campo
-     * {@code detail} válido, retorna uma mensagem padrão.
-     * </p>
+     * <p> Para respostas JSON, utiliza o campo {@code detail}. Caso o corpo esteja ausente, vazio ou não contenha um
+     * campo {@code detail} válido, retorna uma mensagem padrão. </p>
      *
      * @param response resposta HTTP recebida do serviço remoto.
      * @return mensagem do erro.
@@ -108,9 +101,7 @@ public class FeignErrorDecoder implements ErrorDecoder {
 
         try {
 
-            String body = Util.toString(
-                    response.body().asReader(StandardCharsets.UTF_8)
-            );
+            String body = Util.toString(response.body().asReader(StandardCharsets.UTF_8));
 
             if (body == null || body.isBlank()) {
                 return DEFAULT_ERROR_MESSAGE;
@@ -124,13 +115,12 @@ public class FeignErrorDecoder implements ErrorDecoder {
 
             JsonNode detail = json.get("detail");
 
-            if (detail != null
-                    && detail.isTextual()
-                    && !detail.asText().isBlank()) {
-
-                return detail.asText();
+            if (detail != null && detail.isString() && !detail.asString().isBlank()) {
+                return detail.asString();
             }
 
+        } catch (StreamReadException ignored) {
+            // JSON inválido: utiliza mensagem padrão.
         } catch (IOException ignored) {
             // Resposta inválida: utiliza mensagem padrão.
         }
