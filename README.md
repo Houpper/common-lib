@@ -343,7 +343,7 @@ dependencies {
 
 # 16. Publicação
 
-A biblioteca utiliza `maven-publish`.
+A biblioteca utiliza `maven-publish` para geração e publicação dos artefatos Maven.
 
 A publicação possui:
 
@@ -365,95 +365,158 @@ publishing {
 
 ---
 
-# 17. Testes
+# 17. GitHub Packages
 
-A biblioteca deve possuir testes para:
+A `common-lib` é publicada como um pacote Maven no **GitHub Packages**, utilizando o repositório da organização Houpper.
 
-* Exceções de negócio.
-* Mapeamento HTTP do Feign.
-* Extração de `detail`.
-* Respostas sem corpo.
-* Respostas com JSON inválido.
-* Status HTTP desconhecidos.
-* `GlobalExceptionHandler`.
-* Validação com `@Valid`.
-* Tratamento de exceções inesperadas.
-* Auto-configuração.
-* `@ConditionalOnMissingBean`.
-
-Executar:
-
-```bash
-./gradlew test
-```
-
----
-
-# 18. Organização futura
-
-Novas funcionalidades comuns devem ser adicionadas de maneira modular.
-
-Exemplo de evolução:
+Repositório:
 
 ```text
-common-lib
-├── exception
-├── validation
-└── utility
-
-security-lib
-├── authentication
-├── authorization
-└── jwt
-
-tenant-lib
-├── context
-├── resolver
-└── filter
-
-entity-lib
-├── auditing
-├── base
-└── pagination
+https://maven.pkg.github.com/houpper/common-lib
 ```
 
-A `common-lib` deve permanecer pequena e genérica.
+O pacote é identificado pelo seguinte coordenada Maven:
 
-Funcionalidades que possuam forte dependência tecnológica ou arquitetural devem ser avaliadas para uma biblioteca
-própria.
+```text
+br.com.houpper:common-lib
+```
+
+Exemplo de dependência:
+
+```groovy
+dependencies {
+    implementation 'br.com.houpper:common-lib:1.0.0'
+}
+```
+
+Para autenticação no GitHub Packages, o ambiente de desenvolvimento deve fornecer:
+
+```bash
+export GITHUB_ACTOR="seu-usuario"
+export GITHUB_TOKEN="seu-token"
+```
+
+A configuração do repositório Maven utiliza essas variáveis:
+
+```groovy
+repositories {
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/houpper/common-lib")
+
+        credentials {
+            username = System.getenv("GITHUB_ACTOR")
+            password = System.getenv("GITHUB_TOKEN")
+        }
+    }
+}
+```
+
+O token utilizado deve possuir as permissões necessárias para acesso aos pacotes da organização.
+
+O token não deve ser armazenado no código-fonte, versionado no Git ou incluído diretamente nos arquivos de configuração do projeto.
 
 ---
 
-# 19. Princípios
+# 18. Publicação local
 
-Ao adicionar funcionalidades à biblioteca:
+Para publicar no Maven Local:
 
-1. Evitar dependências transitivas desnecessárias.
-2. Preferir `compileOnly` quando apropriado.
-3. Não adicionar regras de negócio específicas.
-4. Utilizar auto-configuração condicional.
-5. Permitir substituição de beans pelo consumidor.
-6. Manter módulos independentes.
-7. Criar testes para cada funcionalidade.
-8. Manter documentação atualizada.
-9. Evitar acoplamento entre módulos.
-10. Priorizar estabilidade dos contratos compartilhados.
+```bash
+./gradlew publishToMavenLocal
+```
 
----
+Depois:
 
-# 20. Stack
+```groovy
+repositories {
+    mavenLocal()
+}
+```
 
-* Java 25
-* Spring Boot 4.1.1
-* Spring Cloud 2025.1.3
-* Spring MVC
-* Spring Security Core
-* OpenFeign
-* Gradle
-* Maven Publish
+E:
+
+```groovy
+dependencies {
+    implementation 'br.com.houpper:common-lib:1.0.0-SNAPSHOT'
+}
+```
+
+A publicação local deve ser utilizada principalmente durante o desenvolvimento e validação da biblioteca.
 
 ---
 
-## Licença
+# 19. Publicação via Gradle
 
-Projeto proprietário da plataforma Houpper.
+A publicação no GitHub Packages pode ser executada através da task `publish`:
+
+```bash
+./gradlew publish
+```
+
+O Gradle utiliza as credenciais fornecidas pelas variáveis de ambiente:
+
+```text
+GITHUB_ACTOR
+GITHUB_TOKEN
+```
+
+O processo atual de publicação é manual e permite que uma versão específica da biblioteca seja publicada no GitHub Packages após sua validação.
+
+---
+
+# 20. CI/CD
+
+> **TODO:** Implementar pipeline de CI/CD para automatizar o processo de validação, versionamento e publicação da `common-lib`.
+
+A implementação futura deverá avaliar um fluxo semelhante a:
+
+```text
+Commit
+   ↓
+Build
+   ↓
+Testes
+   ↓
+Validação
+   ↓
+Criação da versão
+   ↓
+GitHub Packages
+```
+
+O pipeline deverá, preferencialmente:
+
+* Executar os testes automatizados.
+* Validar o build da biblioteca.
+* Gerar JAR, Sources JAR e Javadoc JAR.
+* Publicar automaticamente versões aprovadas.
+* Utilizar as credenciais fornecidas pelo GitHub Actions.
+* Evitar armazenamento de tokens no código-fonte.
+* Permitir rastreabilidade entre uma versão publicada e o commit correspondente.
+* Avaliar publicação baseada em Git tags ou GitHub Releases.
+* Definir uma estratégia para versões `SNAPSHOT` e versões estáveis.
+
+### Possível fluxo futuro
+
+```text
+Pull Request
+     ↓
+Build + Testes
+     ↓
+Merge
+     ↓
+Git Tag
+     ↓
+GitHub Actions
+     ↓
+Build
+     ↓
+Testes
+     ↓
+Publish
+     ↓
+GitHub Packages
+```
+
+A definição final do processo de CI/CD será documentada quando a automação for implementada.
